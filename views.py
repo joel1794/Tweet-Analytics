@@ -91,7 +91,7 @@ def get_tweets_by_language():
         if (lang == None or lang == ""): 
             raise(Exception("Required parameter 'lang' was not specified"))
 
-        return_status = utils_obj.get_verified_tweets()
+        return_status = utils_obj.get_tweets_by_language(lang)
 
         if return_status[STATUS_KEY] == STATUS_FAILED:
             raise Exception(return_status[ERROR_KEY])
