@@ -90,13 +90,19 @@ def get_tweets_by_language():
 
         if (lang == None or lang == ""): 
             raise(Exception("Required parameter 'lang' was not specified"))
+        
+        formatted_lang = lang.strip().lower()
+        # Roughly checking user input: language codes should be either 2 or 3 characters.
+        # Either 2 characters for a language code or 3 characters for "und" (undefined).
+        if (len(formatted_lang) != 2 and formatted_lang != "und"):
+            raise Exception("Invalid language code passed: " + lang)
 
-        return_status = utils_obj.get_tweets_by_language(lang)
+        return_status = utils_obj.get_tweets_by_language(formatted_lang)
 
         if return_status[STATUS_KEY] == STATUS_FAILED:
             raise Exception(return_status[ERROR_KEY])
 
-        print("Tweets in language ", lang, ":")
+        print("Tweets in language", formatted_lang, ":")
         print(return_status[RESULT_KEY])
 
         return jsonify(return_status)

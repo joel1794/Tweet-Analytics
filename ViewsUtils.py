@@ -82,12 +82,6 @@ class ViewsUtils:
     def get_tweets_by_language(self, lang):
         utility_status = {}
         try:
- 
-            formatted_lang = lang.strip().lower()
-            # Roughly checking user input: language codes should be either 2 or 3 characters.
-            # Either 2 characters for a language code or 3 characters for "und" (undefined).
-            if (len(formatted_lang) != 2 and formatted_lang != "und"):
-                raise Exception("Invalid language code passed: " + lang)
             
             mongo_url = "mongodb://localhost:27023/"
             mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
