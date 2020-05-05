@@ -6,7 +6,7 @@ STATUS_KEY = "status"
 ERROR_KEY = "error"
 RESULT_KEY = "result"
 COLLECTION_NAME = "tweets"
-DATABASE_NAME = "twitter"
+DATABASE_NAME = "tweet_analytics"
 
 
 class ViewsUtils:
@@ -46,7 +46,8 @@ class ViewsUtils:
             utility_status[ERROR_KEY] = error_msg
             return utility_status
 
-    def get_verified_tweets(self):
+
+    def fetch_verified_tweets(self):
         utility_status = {}
         try:
             mongo_url = "mongodb://localhost:27023/"
@@ -79,13 +80,14 @@ class ViewsUtils:
             utility_status[ERROR_KEY] = error_msg
             return utility_status
 
-    def get_tweets_by_language(self, lang):
+
+    def fetch_tweets_by_language(self, lang):
         utility_status = {}
         try:
             
             mongo_url = "mongodb://localhost:27023/"
             mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
-            query = [{"user.verified": True}, {"text":1, "user.name":1, "lang":1}]
+            query = [{"lang": lang}, {"text":1, "user.name":1, "lang":1}]
             query_type = "select"
             result = mongo_con.execute_query(query, query_type)
 

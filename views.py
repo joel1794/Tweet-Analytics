@@ -47,14 +47,13 @@ def fetch_tweets_with_hashtags():
             return_status[ERROR_KEY] = error_msg
             return jsonify(return_status)
 
-#fetch_tweets_with_hashtags()
 
 @application.route('/verified_tweets', methods=['GET', 'POST'])
-def get_verified_tweets():
+def fetch_verified_tweets():
     return_status = {}
     result = []
     try:
-        return_status = utils_obj.get_verified_tweets()
+        return_status = utils_obj.fetch_verified_tweets()
 
         if return_status[STATUS_KEY] == STATUS_FAILED:
             raise Exception(return_status[ERROR_KEY])
@@ -62,11 +61,6 @@ def get_verified_tweets():
         print("Verified tweets:")
 
         print(return_status[RESULT_KEY])
-
-
-        # return_status[RESULT_KEY] = result
-
-        # print(return_status)
         return jsonify(return_status)
 
     except Exception as exp:
@@ -82,7 +76,7 @@ def get_verified_tweets():
 
 
 @application.route('/tweets_by_language', methods=['GET', 'POST'])
-def get_tweets_by_language():
+def fetch_tweets_by_language():
     return_status = {}
     result = []
     try:
@@ -97,7 +91,7 @@ def get_tweets_by_language():
         if (len(formatted_lang) != 2 and formatted_lang != "und"):
             raise Exception("Invalid language code passed: " + lang)
 
-        return_status = utils_obj.get_tweets_by_language(formatted_lang)
+        return_status = utils_obj.fetch_tweets_by_language(formatted_lang)
 
         if return_status[STATUS_KEY] == STATUS_FAILED:
             raise Exception(return_status[ERROR_KEY])
