@@ -8,6 +8,16 @@ RESULT_KEY = "result"
 COLLECTION_NAME = "tweets"
 DATABASE_NAME = "tweet_analytics"
 
+LANGUAGE_LIST = ['ar', 'bg', 'bn', 'ca', 'cs', 'cy', 'da', 
+                'de', 'el', 'en', 'en-au', 'en-gb', 'es', 
+                'es-mx', 'eu', 'fa', 'fi', 'fil', 'fr', 
+                'ga', 'gl', 'gu', 'he', 'hi', 'hr', 'hu', 
+                'id', 'it', 'ja', 'kn', 'ko', 'lv', 'mr', 
+                'ms', 'msa', 'nb', 'nl', 'no', 'pl', 'pt', 
+                'pt-pt', 'ro', 'ru', 'sk', 'sr', 'sv', 'ta', 
+                'th', 'tr', 'uk', 'ur', 'vi', 'xx-lc', 'zh-cn', 
+                'zh-hans', 'zh-hant', 'zh-hk']
+
 
 class ViewsUtils:
     def __init__(self):
@@ -152,10 +162,13 @@ class ViewsUtils:
     def fetch_tweets_by_language(self, lang):
         utility_status = {}
         try:
+            formatted_lang = lang.strip().lower()
+            if (formatted_lang not in LANGUAGE_LIST):
+                raise Exception("Invalid language code passed: " + lang)
             
             mongo_url = "mongodb://localhost:27023/"
             mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
-            query = [{"lang": lang}, {"text":1, "user.name":1, "lang":1}]
+            query = [{"lang": formatted_lang}, {"text":1, "user.name":1, "lang":1}]
             query_type = "select"
             result = mongo_con.execute_query(query, query_type)
 
