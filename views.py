@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from ViewsUtils import ViewsUtils
 
 application = Flask(__name__)
@@ -14,7 +14,7 @@ utils_obj = ViewsUtils()
 # Default route. For testing if the client can connect to the application.
 @application.route('/')
 def default_route():
-    return "<h1>The Flask application is running successfully! 👍</h1>"
+    return render_template("index.html")
 
 @application.route('/tweets_with_hashtags', methods=['GET', 'POST'])
 def fetch_tweets_with_hashtags():
