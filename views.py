@@ -139,6 +139,39 @@ def fetch_verified_tweets():
         return jsonify(return_status)
 
 
+@application.route('/tweets_by_min_followers', methods=['GET', 'POST'])
+def fetch_tweets_by_min_followers():
+    return_status = {}
+    result = []
+    try:
+        # variable name "minimum" to avoid conflict with min() function
+        minimum = request.args.get('min')
+
+        if (minimum == None or minimum == ""): 
+            raise(Exception("Required parameter 'min' was not specified"))
+
+        return_status = utils_obj.fetch_tweets_by_min_followers(minimum)
+
+        if return_status[STATUS_KEY] == STATUS_FAILED:
+            raise Exception(return_status[ERROR_KEY])
+
+        print("Tweets from users with more than", minimum, "followers:")
+        print(return_status[RESULT_KEY])
+
+        return jsonify(return_status)
+
+    except Exception as exp:
+        if ERROR_KEY in return_status:
+            error_msg = "Error while fetching tweets by language in views: ", str(return_status[ERROR_KEY])
+            print(error_msg)
+        else:
+            error_msg = "Error while fetching tweets by language in views: " + str(exp)
+            print(error_msg)
+            return_status[STATUS_KEY] = STATUS_FAILED
+            return_status[ERROR_KEY] = error_msg
+        return jsonify(return_status)
+
+
 @application.route('/tweets_by_language', methods=['GET', 'POST'])
 def fetch_tweets_by_language():
     return_status = {}

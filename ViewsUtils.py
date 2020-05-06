@@ -15,8 +15,8 @@ LANGUAGE_LIST = ['ar', 'bg', 'bn', 'ca', 'cs', 'cy', 'da',
                 'id', 'it', 'ja', 'kn', 'ko', 'lv', 'mr', 
                 'ms', 'msa', 'nb', 'nl', 'no', 'pl', 'pt', 
                 'pt-pt', 'ro', 'ru', 'sk', 'sr', 'sv', 'ta', 
-                'th', 'tr', 'uk', 'ur', 'vi', 'xx-lc', 'zh-cn', 
-                'zh-hans', 'zh-hant', 'zh-hk']
+                'th', 'tr', 'uk', 'ur', 'vi', 'xx-lc', 
+                'zh-cn',  'zh-hans', 'zh-hant', 'zh-hk']
 
 
 class ViewsUtils:
@@ -153,6 +153,50 @@ class ViewsUtils:
                 print(error_msg)
             else:
                 error_msg = "Error while fetching verified tweets in viewsutils" + str(exp)
+                print(error_msg)
+            utility_status[STATUS_KEY] = STATUS_FAILED
+            utility_status[ERROR_KEY] = error_msg
+            return utility_status
+
+
+    def fetch_tweets_by_min_followers(self, minimum):
+        utility_status = {}
+
+        try:
+            # This will throw a ValueError if not parseable as int
+            minimum = int(minimum)
+
+            mongo_url = "mongodb://localhost:27023/"
+            mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
+            query = [{"user.followers_count": {"$gte": minimum}}, {"text":1, "user.name":1, "user.followers_count":1}]
+            query_type = "select"
+            result = mongo_con.execute_query(query, query_type)
+
+            if result[STATUS_KEY] == STATUS_FAILED:
+                raise Exception(result[ERROR_KEY])
+
+            utility_status[RESULT_KEY] = []
+
+            for record in result[RESULT_KEY]:
+                if "_id" in record:
+                    del record["_id"]
+                utility_status[RESULT_KEY].append(record)
+
+            utility_status[STATUS_KEY] = STATUS_SUCCESS
+            return utility_status
+        
+        except ValueError as exp:
+            error_msg = "Error while fetching tweets by minimum followers: Invalid integer supplied: " + minimum
+            print(error_msg)
+            utility_status[STATUS_KEY] = STATUS_FAILED
+            utility_status[ERROR_KEY] = error_msg
+            return utility_status
+        except Exception as exp:
+            if ERROR_KEY in utility_status:
+                error_msg = "Error while fetching tweets by minimum followers in viewsutils: " + str(utility_status[ERROR_KEY])
+                print(error_msg)
+            else:
+                error_msg = "Error while fetching tweets by minimum followers in viewsutils: " + str(exp)
                 print(error_msg)
             utility_status[STATUS_KEY] = STATUS_FAILED
             utility_status[ERROR_KEY] = error_msg
