@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from ViewsUtils import ViewsUtils
 
 application = Flask(__name__)
@@ -14,7 +14,7 @@ utils_obj = ViewsUtils()
 # Default route. For testing if the client can connect to the application.
 @application.route('/')
 def default_route():
-    return "<h1>The Flask application is running successfully! 👍</h1>"
+    return render_template("index.html")
 
 @application.route('/tweets_with_hashtags', methods=['GET', 'POST'])
 def fetch_tweets_with_hashtags():
@@ -45,7 +45,7 @@ def fetch_tweets_with_hashtags():
             print(error_msg)
             return_status[STATUS_KEY] = STATUS_FAILED
             return_status[ERROR_KEY] = error_msg
-            return jsonify(return_status)
+        return jsonify(return_status)
 
 
 @application.route('/deleted_tweets', methods=['GET', 'POST'])
@@ -77,7 +77,7 @@ def fetch_deleted_tweets():
             print(error_msg)
             return_status[STATUS_KEY] = STATUS_FAILED
             return_status[ERROR_KEY] = error_msg
-            return jsonify(return_status)
+        return jsonify(return_status)
 
 
 @application.route('/tweets_with_urls', methods=['GET', 'POST'])
@@ -109,7 +109,7 @@ def fetch_tweets_with_urls():
             print(error_msg)
             return_status[STATUS_KEY] = STATUS_FAILED
             return_status[ERROR_KEY] = error_msg
-            return jsonify(return_status)
+        return jsonify(return_status)
 
 
 @application.route('/verified_tweets', methods=['GET', 'POST'])
@@ -136,31 +136,26 @@ def fetch_verified_tweets():
             print(error_msg)
             return_status[STATUS_KEY] = STATUS_FAILED
             return_status[ERROR_KEY] = error_msg
-            return jsonify(return_status)
+        return jsonify(return_status)
 
 
-@application.route('/tweets_by_language', methods=['GET', 'POST'])
-def fetch_tweets_by_language():
+@application.route('/tweets_by_min_followers', methods=['GET', 'POST'])
+def fetch_tweets_by_min_followers():
     return_status = {}
     result = []
     try:
-        lang = request.args.get('lang')
+        # variable name "minimum" to avoid conflict with min() function
+        minimum = request.args.get('min')
 
-        if (lang == None or lang == ""): 
-            raise(Exception("Required parameter 'lang' was not specified"))
-        
-        formatted_lang = lang.strip().lower()
-        # Roughly checking user input: language codes should be either 2 or 3 characters.
-        # Either 2 characters for a language code or 3 characters for "und" (undefined).
-        if (len(formatted_lang) != 2 and formatted_lang != "und"):
-            raise Exception("Invalid language code passed: " + lang)
+        if (minimum == None or minimum == ""): 
+            raise(Exception("Required parameter 'min' was not specified"))
 
-        return_status = utils_obj.fetch_tweets_by_language(formatted_lang)
+        return_status = utils_obj.fetch_tweets_by_min_followers(minimum)
 
         if return_status[STATUS_KEY] == STATUS_FAILED:
             raise Exception(return_status[ERROR_KEY])
 
-        print("Tweets in language", formatted_lang, ":")
+        print("Tweets from users with more than", minimum, "followers:")
         print(return_status[RESULT_KEY])
 
         return jsonify(return_status)
@@ -174,7 +169,72 @@ def fetch_tweets_by_language():
             print(error_msg)
             return_status[STATUS_KEY] = STATUS_FAILED
             return_status[ERROR_KEY] = error_msg
-            return jsonify(return_status)
+        return jsonify(return_status)
+
+
+@application.route('/tweets_with_mentions', methods=['GET', 'POST'])
+def fetch_tweets_with_mentions():
+    return_status = {}
+    result = []
+    try:
+        # variable name "minimum" to avoid conflict with min() function
+        username = request.args.get('username')
+
+        if (username == None or username == ""): 
+            raise(Exception("Required parameter 'username' was not specified"))
+
+        return_status = utils_obj.fetch_tweets_with_mentions(username)
+
+        if return_status[STATUS_KEY] == STATUS_FAILED:
+            raise Exception(return_status[ERROR_KEY])
+
+        print("Tweets that mention @" + username + ":")
+        print(return_status[RESULT_KEY])
+
+        return jsonify(return_status)
+
+    except Exception as exp:
+        if ERROR_KEY in return_status:
+            error_msg = "Error while fetching tweets by language in views: ", str(return_status[ERROR_KEY])
+            print(error_msg)
+        else:
+            error_msg = "Error while fetching tweets by language in views: " + str(exp)
+            print(error_msg)
+            return_status[STATUS_KEY] = STATUS_FAILED
+            return_status[ERROR_KEY] = error_msg
+        return jsonify(return_status)
+
+
+@application.route('/tweets_by_language', methods=['GET', 'POST'])
+def fetch_tweets_by_language():
+    return_status = {}
+    result = []
+    try:
+        lang = request.args.get('lang')
+
+        if (lang == None or lang == ""): 
+            raise(Exception("Required parameter 'lang' was not specified"))
+
+        return_status = utils_obj.fetch_tweets_by_language(lang)
+
+        if return_status[STATUS_KEY] == STATUS_FAILED:
+            raise Exception(return_status[ERROR_KEY])
+
+        print("Tweets in language", lang, ":")
+        print(return_status[RESULT_KEY])
+
+        return jsonify(return_status)
+
+    except Exception as exp:
+        if ERROR_KEY in return_status:
+            error_msg = "Error while fetching tweets by language in views: ", str(return_status[ERROR_KEY])
+            print(error_msg)
+        else:
+            error_msg = "Error while fetching tweets by language in views: " + str(exp)
+            print(error_msg)
+            return_status[STATUS_KEY] = STATUS_FAILED
+            return_status[ERROR_KEY] = error_msg
+        return jsonify(return_status)
 
 if __name__ == '__main__':
     application.run(host='0.0.0.0', port=8001)
