@@ -172,6 +172,39 @@ def fetch_tweets_by_min_followers():
         return jsonify(return_status)
 
 
+@application.route('/tweets_with_mentions', methods=['GET', 'POST'])
+def fetch_tweets_with_mentions():
+    return_status = {}
+    result = []
+    try:
+        # variable name "minimum" to avoid conflict with min() function
+        username = request.args.get('username')
+
+        if (username == None or username == ""): 
+            raise(Exception("Required parameter 'username' was not specified"))
+
+        return_status = utils_obj.fetch_tweets_with_mentions(username)
+
+        if return_status[STATUS_KEY] == STATUS_FAILED:
+            raise Exception(return_status[ERROR_KEY])
+
+        print("Tweets that mention @" + username + ":")
+        print(return_status[RESULT_KEY])
+
+        return jsonify(return_status)
+
+    except Exception as exp:
+        if ERROR_KEY in return_status:
+            error_msg = "Error while fetching tweets by language in views: ", str(return_status[ERROR_KEY])
+            print(error_msg)
+        else:
+            error_msg = "Error while fetching tweets by language in views: " + str(exp)
+            print(error_msg)
+            return_status[STATUS_KEY] = STATUS_FAILED
+            return_status[ERROR_KEY] = error_msg
+        return jsonify(return_status)
+
+
 @application.route('/tweets_by_language', methods=['GET', 'POST'])
 def fetch_tweets_by_language():
     return_status = {}

@@ -1,4 +1,5 @@
 from MongoDBUtility import MongoDBUtility
+import re
 
 STATUS_SUCCESS = "SUCCESS"
 STATUS_FAILED = "FAILED"
@@ -197,6 +198,46 @@ class ViewsUtils:
                 print(error_msg)
             else:
                 error_msg = "Error while fetching tweets by minimum followers in viewsutils: " + str(exp)
+                print(error_msg)
+            utility_status[STATUS_KEY] = STATUS_FAILED
+            utility_status[ERROR_KEY] = error_msg
+            return utility_status
+
+
+    def fetch_tweets_with_mentions(self, username):
+        utility_status = {}
+        try:
+            # Usernames are max 15 characters, alphanumeric w/ underscores.
+            # source: https://help.twitter.com/en/managing-your-account/twitter-username-rules
+            if not re.match(r'^[a-zA-Z0-9_]{1,15}$', username):
+                raise Exception("Invalid username:" + username)
+            
+            mongo_url = "mongodb://localhost:27023/"
+            mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
+            query = [{"entities.user_mentions.screen_name":username},
+                     {"entities.user_mentions.screen_name":1, "text":1, "user.name":1}]
+            query_type = "select"
+            result = mongo_con.execute_query(query, query_type)
+
+            if result[STATUS_KEY] == STATUS_FAILED:
+                raise Exception(result[ERROR_KEY])
+
+            utility_status[RESULT_KEY] = []
+
+            for record in result[RESULT_KEY]:
+                if "_id" in record:
+                    del record["_id"]
+                utility_status[RESULT_KEY].append(record)
+
+            utility_status[STATUS_KEY] = STATUS_SUCCESS
+            return utility_status
+
+        except Exception as exp:
+            if ERROR_KEY in utility_status:
+                error_msg = "Error while fetching tweets by language in viewsutils: " + str(utility_status[ERROR_KEY])
+                print(error_msg)
+            else:
+                error_msg = "Error while fetching tweets by language in viewsutils: " + str(exp)
                 print(error_msg)
             utility_status[STATUS_KEY] = STATUS_FAILED
             utility_status[ERROR_KEY] = error_msg
