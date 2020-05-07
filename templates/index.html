@@ -19,10 +19,11 @@
         <li><a href="{{ url_for('fetch_deleted_tweets')}}">Deleted Tweets</a></li>
         <li><a href="{{ url_for('fetch_tweets_with_urls')}}">Tweets with URLs</a></li>
         <li><a href="{{ url_for('fetch_verified_tweets')}}">All Verified Tweets</a></li>
-        <li><a href="{{ url_for('fetch_verified_tweets', date='2019-05-01T12:06:06')}}">Verified Tweets after May 5, 2019, 12:06:06</a></li>
+        <li><a href="{{ url_for('fetch_verified_tweets', date='2019-05-01T12:06:06')}}">Verified Tweets after May 1, 2019, 12:06:06</a></li>
         <li><a href="{{ url_for('fetch_tweets_by_min_followers', min='10000000')}}">Tweets from users with at least 10,000,000 followers</a></li>
         <li><a href="{{ url_for('fetch_tweets_with_mentions', username='katyperry')}}">Tweets that mention @katyperry</a></li>
         <li><a href="{{ url_for('fetch_tweets_by_language', lang='en')}}">Tweets in specific language (English)</a></li>
+        <li><a href="{{ url_for('fetch_top_favorited_tweets', date='2019-05-01', lang='en')}}">Top Favorited Tweets for May 1, 2019</a></li>
     </ul>
     
     {{ a_variable }}

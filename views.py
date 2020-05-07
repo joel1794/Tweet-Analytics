@@ -148,6 +148,39 @@ def fetch_verified_tweets():
         return jsonify(return_status)
 
 
+@application.route('/top_favorited_tweets', methods=['GET', 'POST'])
+def fetch_top_favorited_tweets():
+    return_status = {}
+    result = []
+    try:
+        date = request.args.get('date')
+
+        if (date == None or date == ""): 
+            return_status = utils_obj.fetch_top_favorited_tweets()
+        else:
+            return_status = utils_obj.fetch_top_favorited_tweets(date=date)
+        
+
+        if return_status[STATUS_KEY] == STATUS_FAILED:
+            raise Exception(return_status[ERROR_KEY])
+
+        print("Verified tweets:")
+
+        print(return_status[RESULT_KEY])
+        return jsonify(return_status)
+
+    except Exception as exp:
+        if ERROR_KEY in return_status:
+            error_msg = "Error while fetching verified tweets in views: ", str(return_status[ERROR_KEY])
+            print(error_msg)
+        else:
+            error_msg = "Error while fetching verified tweets in views: " + str(exp)
+            print(error_msg)
+            return_status[STATUS_KEY] = STATUS_FAILED
+            return_status[ERROR_KEY] = error_msg
+        return jsonify(return_status)
+
+
 @application.route('/tweets_by_min_followers', methods=['GET', 'POST'])
 def fetch_tweets_by_min_followers():
     return_status = {}
