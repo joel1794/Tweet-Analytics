@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from ViewsUtils import ViewsUtils
+from urllib.parse import unquote
 
 application = Flask(__name__)
 application.debug = True
@@ -117,7 +118,15 @@ def fetch_verified_tweets():
     return_status = {}
     result = []
     try:
-        return_status = utils_obj.fetch_verified_tweets()
+        date = request.args.get('date')
+
+        if (date == None or date == ""): 
+            return_status = utils_obj.fetch_verified_tweets()
+        else:
+            # Undoing escape characters from URL
+            date = unquote(date)
+            return_status = utils_obj.fetch_verified_tweets(date=date)
+        
 
         if return_status[STATUS_KEY] == STATUS_FAILED:
             raise Exception(return_status[ERROR_KEY])

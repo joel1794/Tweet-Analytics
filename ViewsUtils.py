@@ -1,4 +1,5 @@
 from MongoDBUtility import MongoDBUtility
+from datetime import datetime
 import re
 
 STATUS_SUCCESS = "SUCCESS"
@@ -126,12 +127,16 @@ class ViewsUtils:
             return utility_status
 
 
-    def fetch_verified_tweets(self):
+    def fetch_verified_tweets(self, date="2000-01-01T01:00:00"):
         utility_status = {}
         try:
+            
+            print(date)
+
             mongo_url = "mongodb://localhost:27023/"
             mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
-            query = [{"user.verified": True}, {"text":1, "user.name":1, "user.followers_count":1}]
+            query = [{"user.verified": True, "created_at_time":{"$gt" : datetime.strptime(date, "%Y-%m-%dT%H:%M:%S") }}, 
+                    {"text":1, "user.name":1, "user.followers_count":1, "created_at_time":1}]
             query_type = "select"
             result = mongo_con.execute_query(query, query_type)
 
