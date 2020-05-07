@@ -66,7 +66,7 @@ class ViewsUtils:
         try:
             mongo_url = "mongodb://localhost:27023/"
             mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
-            query = [{"delete" : {"$exists": True}}]
+            query = [{"delete": {"$exists": True}}]
             query_type = "select"
             result = mongo_con.execute_query(query, query_type)
 
@@ -328,6 +328,7 @@ class ViewsUtils:
             utility_status[ERROR_KEY] = error_msg
             return utility_status
 
+
     def fetch_tweets_with_certain_text(self, language, text):
         utility_status = {}
         lang_to_langcode = {"Arabic": "ar", "Bulgarian": "bg", "Catalan": "ca", "Czech": "cs", "Welsh": "cy",
@@ -477,3 +478,127 @@ class ViewsUtils:
             utility_status[STATUS_KEY] = STATUS_FAILED
             utility_status[ERROR_KEY] = error_msg
             return utility_status
+
+          
+    def fetch_tweets_by_min_favorites(self, minimum):
+        utility_status = {}
+
+        try:
+            # This will throw a ValueError if not parseable as int
+            minimum = int(minimum)
+
+            mongo_url = "mongodb://localhost:27023/"
+            mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
+            query = [{"favorites": {"$gte": minimum}}, {"text": 1, "user.name": 1, "favorites": 1}]
+            query_type = "select"
+            result = mongo_con.execute_query(query, query_type)
+
+            if result[STATUS_KEY] == STATUS_FAILED:
+                raise Exception(result[ERROR_KEY])
+
+            utility_status[RESULT_KEY] = []
+
+            for record in result[RESULT_KEY]:
+                if "_id" in record:
+                    del record["_id"]
+                utility_status[RESULT_KEY].append(record)
+
+            utility_status[STATUS_KEY] = STATUS_SUCCESS
+            return utility_status
+
+        except ValueError as exp:
+            error_msg = "Error while fetching tweets by minimum favorites: Invalid integer supplied: " + minimum
+            print(error_msg)
+            utility_status[STATUS_KEY] = STATUS_FAILED
+            utility_status[ERROR_KEY] = error_msg
+            return utility_status
+        except Exception as exp:
+            if ERROR_KEY in utility_status:
+                error_msg = "Error while fetching tweets by minimum favorites in viewsutils: " + str(utility_status[ERROR_KEY])
+                print(error_msg)
+            else:
+                error_msg = "Error while fetching tweets by minimum favorites in viewsutils: " + str(exp)
+                print(error_msg)
+            utility_status[STATUS_KEY] = STATUS_FAILED
+            utility_status[ERROR_KEY] = error_msg
+            return utility_status
+
+
+    def fetch_tweets_with_location(self, location):
+        utility_status = {}
+        try:
+            if not re.match(r'^[a-zA-Z]*$', location):
+                raise Exception("Invalid location:" + location)
+
+            mongo_url = "mongodb://localhost:27023/"
+            mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
+            query = [{"place": {"$exists": True, "$ne": None}, "place.name": location}, { "user.name": 1, "text": 1, "place.name": 1, "place.full_name": 1}]
+            query_type = "select"
+            result = mongo_con.execute_query(query, query_type)
+
+            if result[STATUS_KEY] == STATUS_FAILED:
+                raise Exception(result[ERROR_KEY])
+
+            utility_status[RESULT_KEY] = []
+
+            for record in result[RESULT_KEY]:
+                if "_id" in record:
+                    del record["_id"]
+                utility_status[RESULT_KEY].append(record)
+
+            utility_status[STATUS_KEY] = STATUS_SUCCESS
+            return utility_status
+
+        except Exception as exp:
+            if ERROR_KEY in utility_status:
+                error_msg = "Error while fetching tweets by location in viewsutils: " + str(utility_status[ERROR_KEY])
+                print(error_msg)
+            else:
+                error_msg = "Error while fetching tweets by location in viewsutils: " + str(exp)
+                print(error_msg)
+            utility_status[STATUS_KEY] = STATUS_FAILED
+            utility_status[ERROR_KEY] = error_msg
+            return utility_status
+
+
+    def fetch_tweets_with_given_hashtag(self, hashtag):
+        utility_status = {}
+        try:
+            # Usernames are max 15 characters, alphanumeric w/ underscores.
+            # source: https://help.twitter.com/en/managing-your-account/twitter-username-rules
+            if not re.match(r'^[a-zA-Z0-9_]*$', hashtag):
+                raise Exception("Invalid hashtag:" + hashtag)
+
+            hashtag_unicode = hashtag.encode("utf-8")
+            mongo_url = "mongodb://localhost:27023/"
+            mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
+            query = [{"entities.hashtags.text": hashtag},
+                     {"entities.hashtags.text": 1, "text": 1, "user.name": 1}]
+
+            query_type = "select"
+            result = mongo_con.execute_query(query, query_type)
+
+            if result[STATUS_KEY] == STATUS_FAILED:
+                raise Exception(result[ERROR_KEY])
+
+            utility_status[RESULT_KEY] = []
+
+            for record in result[RESULT_KEY]:
+                if "_id" in record:
+                    del record["_id"]
+                utility_status[RESULT_KEY].append(record)
+
+            utility_status[STATUS_KEY] = STATUS_SUCCESS
+            return utility_status
+
+        except Exception as exp:
+            if ERROR_KEY in utility_status:
+                error_msg = "Error while fetching tweets by language in viewsutils: " + str(utility_status[ERROR_KEY])
+                print(error_msg)
+            else:
+                error_msg = "Error while fetching tweets by language in viewsutils: " + str(exp)
+                print(error_msg)
+            utility_status[STATUS_KEY] = STATUS_FAILED
+            utility_status[ERROR_KEY] = error_msg
+            return utility_status
+
