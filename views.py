@@ -147,7 +147,7 @@ def fetch_tweets_by_min_followers():
         # variable name "minimum" to avoid conflict with min() function
         minimum = request.args.get('min')
 
-        if (minimum == None or minimum == ""): 
+        if (minimum == None or minimum == ""):
             raise(Exception("Required parameter 'min' was not specified"))
 
         return_status = utils_obj.fetch_tweets_by_min_followers(minimum)
@@ -180,7 +180,7 @@ def fetch_tweets_with_mentions():
         # variable name "minimum" to avoid conflict with min() function
         username = request.args.get('username')
 
-        if (username == None or username == ""): 
+        if (username == None or username == ""):
             raise(Exception("Required parameter 'username' was not specified"))
 
         return_status = utils_obj.fetch_tweets_with_mentions(username)
@@ -212,7 +212,7 @@ def fetch_tweets_by_language():
     try:
         lang = request.args.get('lang')
 
-        if (lang == None or lang == ""): 
+        if (lang == None or lang == ""):
             raise(Exception("Required parameter 'lang' was not specified"))
 
         return_status = utils_obj.fetch_tweets_by_language(lang)
@@ -236,5 +236,134 @@ def fetch_tweets_by_language():
             return_status[ERROR_KEY] = error_msg
         return jsonify(return_status)
 
+
+@application.route('/tweets_with_certain_text', methods=['GET', 'POST'])
+def fetch_tweets_with_certain_text():
+    return_status = {}
+    try:
+        input_parameters = request.get_json()
+
+        if "lang" not in input_parameters or input_parameters["lang"] is None or input_parameters["lang"] == "":
+            raise(Exception("Required parameter 'lang' was not specified"))
+
+        if "text" not in input_parameters or input_parameters["text"] is None or input_parameters["text"] == "":
+            raise(Exception("Required parameter 'text' was not specified"))
+
+        text = input_parameters["text"]
+        lang = input_parameters["lang"]
+        formatted_lang = lang.strip().lower().capitalize()
+
+        return_status = utils_obj.fetch_tweets_with_certain_text(formatted_lang, text)
+
+        if return_status[STATUS_KEY] == STATUS_FAILED:
+            raise Exception(return_status[ERROR_KEY])
+
+        print("Tweets in language", formatted_lang, ":")
+        print(return_status[RESULT_KEY])
+
+        return jsonify(return_status)
+
+    except Exception as exp:
+        if ERROR_KEY in return_status:
+            error_msg = "EError while fetching tweets with certain text in views: ", str(return_status[ERROR_KEY])
+            print(error_msg)
+        else:
+            error_msg = "Error while fetching tweets with certain text in views: " + str(exp)
+            print(error_msg)
+            return_status[STATUS_KEY] = STATUS_FAILED
+            return_status[ERROR_KEY] = error_msg
+        return jsonify(return_status)
+
+
+@application.route('/add_new_tweet', methods=['GET', 'POST'])
+def insert_tweet():
+    return_status = {}
+    try:
+        input_parameters = request.get_json()
+
+        if input_parameters is None or input_parameters == "":
+            raise (Exception("Input needs to be provided inorder to add tweet"))
+        return_status = utils_obj.insert_tweet(input_parameters)
+
+        if return_status[STATUS_KEY] == STATUS_FAILED:
+            raise Exception(return_status[ERROR_KEY])
+
+        print(return_status[RESULT_KEY])
+
+        return jsonify(return_status)
+
+    except Exception as exp:
+        if ERROR_KEY in return_status:
+            error_msg = "Error while inserting tweet in views", str(return_status[ERROR_KEY])
+            print(error_msg)
+        else:
+            error_msg = "Error while inserting tweet in views" + str(exp)
+            print(error_msg)
+            return_status[STATUS_KEY] = STATUS_FAILED
+            return_status[ERROR_KEY] = error_msg
+        return jsonify(return_status)
+
+
+@application.route('/delete_tweet', methods=['GET', 'POST'])
+def remove_tweet():
+    return_status = {}
+    try:
+        input_parameters = request.get_json()
+
+        if "_id" not in input_parameters or input_parameters["_id"] is None or input_parameters["_id"] == "":
+            raise (Exception("Input needs to be provided inorder to delete tweet"))
+
+        return_status = utils_obj.remove_tweet(input_parameters)
+
+        if return_status[STATUS_KEY] == STATUS_FAILED:
+            raise Exception(return_status[ERROR_KEY])
+
+        print(return_status[RESULT_KEY])
+
+        return jsonify(return_status)
+
+    except Exception as exp:
+        if ERROR_KEY in return_status:
+            error_msg = "Error while deleting tweet in views", str(return_status[ERROR_KEY])
+            print(error_msg)
+        else:
+            error_msg = "Error while deleting tweet in views" + str(exp)
+            print(error_msg)
+            return_status[STATUS_KEY] = STATUS_FAILED
+            return_status[ERROR_KEY] = error_msg
+        return jsonify(return_status)
+
+
+@application.route('/tweets_for_user_ordered', methods=['GET', 'POST'])
+def find_tweets_for_user_ordered():
+    return_status = {}
+    try:
+        input_parameters = request.get_json()
+
+        if input_parameters is None or input_parameters == "" or input_parameters["user_id"] is None \
+                or input_parameters["user_id"] == "":
+            raise (Exception("User id needs to be provided inorder to fetch tweets"))
+
+        return_status = utils_obj.find_tweets_for_user_ordered(input_parameters["user_id"])
+
+        if return_status[STATUS_KEY] == STATUS_FAILED:
+            raise Exception(return_status[ERROR_KEY])
+
+        # print(return_status[RESULT_KEY])
+
+        return jsonify(return_status)
+
+    except Exception as exp:
+        if ERROR_KEY in return_status:
+            error_msg = "Error while deleting tweet in views", str(return_status[ERROR_KEY])
+            print(error_msg)
+        else:
+            error_msg = "Error while deleting tweet in views" + str(exp)
+            print(error_msg)
+            return_status[STATUS_KEY] = STATUS_FAILED
+            return_status[ERROR_KEY] = error_msg
+        return jsonify(return_status)
+
+
 if __name__ == '__main__':
-    application.run(host='0.0.0.0', port=8001)
+    application.run(host='0.0.0.0', port=8005)
