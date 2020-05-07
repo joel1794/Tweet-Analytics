@@ -167,7 +167,7 @@ class ViewsUtils:
             return utility_status
 
 
-    def fetch_top_favorited_tweets(self, date='2019-04-01'):
+    def fetch_top_favorited_tweets(self, date='2019-04-01'): 
         utility_status = {}
         try:
             
@@ -175,11 +175,11 @@ class ViewsUtils:
             mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
             query = [{"$match": {"created_at_time": {"$gte": datetime.strptime(date, "%Y-%m-%d"), 
                                                      "$lt": datetime.strptime(date, "%Y-%m-%d") + timedelta(days=1)}}},
-                    {"$sort": { "favorite_count": -1}},
+                    {"$sort": { "favorites": -1}},
                     {"$limit": 10},
-                    {"$project": {"text":1, "created_at_time":1, "favorite_count":1, "user.name":1}}]
+                    {"$project": {"text":1, "created_at_time":1, "favorites":1, "user.name":1}}]
             
-            # query_type = "select"
+            query_type = "aggregate"
             result = mongo_con.execute_query(query, query_type)
 
             if result[STATUS_KEY] == STATUS_FAILED:

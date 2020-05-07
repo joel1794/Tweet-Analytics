@@ -17,9 +17,9 @@ class MongoDBUtility:
         try:
             if query_type.lower() == "select":
                 if len(query) == 2:
-                    result = self.collection.find(query[0], query[1])
+                    result = self.collection.find(query[0], query[1]).limit(100)
                 else:
-                    result = self.collection.find(query[0])
+                    result = self.collection.find(query[0]).limit(100)
 
                 return {"status": "SUCCESS", "result": result}
 
