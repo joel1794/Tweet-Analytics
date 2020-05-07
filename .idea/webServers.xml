@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="aa7e4993-5522-4ae2-94ad-2bf400beb6b8" name="My AWS" url="http://ec2-user@ec2-3-95-160-59.compute-1.amazonaws.com">
+        <fileTransfer host="ec2-user@ec2-3-95-160-59.compute-1.amazonaws.com" port="22" privateKey="$PROJECT_DIR$/../nosql_project.pem" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
