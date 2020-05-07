@@ -241,16 +241,16 @@ def fetch_tweets_by_language():
 def fetch_tweets_with_certain_text():
     return_status = {}
     try:
-        input_parameters = request.get_json()
 
-        if "lang" not in input_parameters or input_parameters["lang"] is None or input_parameters["lang"] == "":
+        lang = request.args.get('lang')
+        text = request.args.get('text')
+
+        if lang is None or lang == "":
             raise(Exception("Required parameter 'lang' was not specified"))
 
-        if "text" not in input_parameters or input_parameters["text"] is None or input_parameters["text"] == "":
+        if text is None or text == "":
             raise(Exception("Required parameter 'text' was not specified"))
 
-        text = input_parameters["text"]
-        lang = input_parameters["lang"]
         formatted_lang = lang.strip().lower().capitalize()
 
         return_status = utils_obj.fetch_tweets_with_certain_text(formatted_lang, text)
@@ -265,7 +265,7 @@ def fetch_tweets_with_certain_text():
 
     except Exception as exp:
         if ERROR_KEY in return_status:
-            error_msg = "EError while fetching tweets with certain text in views: ", str(return_status[ERROR_KEY])
+            error_msg = "Error while fetching tweets with certain text in views: ", str(return_status[ERROR_KEY])
             print(error_msg)
         else:
             error_msg = "Error while fetching tweets with certain text in views: " + str(exp)
@@ -279,10 +279,12 @@ def fetch_tweets_with_certain_text():
 def insert_tweet():
     return_status = {}
     try:
-        input_parameters = request.get_json()
+        input_parameters = {}
+        input_parameters['id_str'] = request.args.get('id_str')
 
         if input_parameters is None or input_parameters == "":
             raise (Exception("Input needs to be provided inorder to add tweet"))
+
         return_status = utils_obj.insert_tweet(input_parameters)
 
         if return_status[STATUS_KEY] == STATUS_FAILED:
@@ -308,7 +310,8 @@ def insert_tweet():
 def remove_tweet():
     return_status = {}
     try:
-        input_parameters = request.get_json()
+        input_parameters = {}
+        input_parameters['_id'] = request.args.get('_id')
 
         if "_id" not in input_parameters or input_parameters["_id"] is None or input_parameters["_id"] == "":
             raise (Exception("Input needs to be provided inorder to delete tweet"))
@@ -338,7 +341,8 @@ def remove_tweet():
 def find_tweets_for_user_ordered():
     return_status = {}
     try:
-        input_parameters = request.get_json()
+        input_parameters = {}
+        input_parameters['user_id'] = request.args.get('user_id')
 
         if input_parameters is None or input_parameters == "" or input_parameters["user_id"] is None \
                 or input_parameters["user_id"] == "":
