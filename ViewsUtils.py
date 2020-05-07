@@ -291,7 +291,7 @@ class ViewsUtils:
 
             mongo_url = "mongodb://localhost:27023/"
             mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
-            query = [{"favorite_count": {"$gte": minimum}}, {"text": 1, "user.name": 1, "favorite_count": 1}]
+            query = [{"favorites": {"$gte": minimum}}, {"text": 1, "user.name": 1, "favorites": 1}]
             query_type = "select"
             result = mongo_con.execute_query(query, query_type)
 
@@ -334,7 +334,7 @@ class ViewsUtils:
 
             mongo_url = "mongodb://localhost:27023/"
             mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
-            query = [{"place": {"$exists": True, "$ne": None}, "place.name": location}, {"text": 1, "place": 1}]
+            query = [{"place": {"$exists": True, "$ne": None}, "place.name": location}, { "user.name": 1, "text": 1, "place.name": 1, "place.full_name": 1}]
             query_type = "select"
             result = mongo_con.execute_query(query, query_type)
 
@@ -374,7 +374,7 @@ class ViewsUtils:
             hashtag_unicode = hashtag.encode("utf-8")
             mongo_url = "mongodb://localhost:27023/"
             mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
-            query = [{"entities.hashtags.text": hashtag_unicode},
+            query = [{"entities.hashtags.text": hashtag},
                      {"entities.hashtags.text": 1, "text": 1, "user.name": 1}]
 
             query_type = "select"
