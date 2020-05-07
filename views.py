@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from ViewsUtils import ViewsUtils
+from urllib.parse import unquote
 
 application = Flask(__name__)
 application.debug = True
@@ -117,7 +118,48 @@ def fetch_verified_tweets():
     return_status = {}
     result = []
     try:
-        return_status = utils_obj.fetch_verified_tweets()
+        date = request.args.get('date')
+
+        if (date == None or date == ""): 
+            return_status = utils_obj.fetch_verified_tweets()
+        else:
+            # Undoing escape characters from URL
+            date = unquote(date)
+            return_status = utils_obj.fetch_verified_tweets(date=date)
+        
+
+        if return_status[STATUS_KEY] == STATUS_FAILED:
+            raise Exception(return_status[ERROR_KEY])
+
+        print("Verified tweets:")
+
+        print(return_status[RESULT_KEY])
+        return jsonify(return_status)
+
+    except Exception as exp:
+        if ERROR_KEY in return_status:
+            error_msg = "Error while fetching verified tweets in views: ", str(return_status[ERROR_KEY])
+            print(error_msg)
+        else:
+            error_msg = "Error while fetching verified tweets in views: " + str(exp)
+            print(error_msg)
+            return_status[STATUS_KEY] = STATUS_FAILED
+            return_status[ERROR_KEY] = error_msg
+        return jsonify(return_status)
+
+
+@application.route('/top_favorited_tweets', methods=['GET', 'POST'])
+def fetch_top_favorited_tweets():
+    return_status = {}
+    result = []
+    try:
+        date = request.args.get('date')
+
+        if (date == None or date == ""): 
+            return_status = utils_obj.fetch_top_favorited_tweets()
+        else:
+            return_status = utils_obj.fetch_top_favorited_tweets(date=date)
+        
 
         if return_status[STATUS_KEY] == STATUS_FAILED:
             raise Exception(return_status[ERROR_KEY])
@@ -147,7 +189,7 @@ def fetch_tweets_by_min_followers():
         # variable name "minimum" to avoid conflict with min() function
         minimum = request.args.get('min')
 
-        if (minimum == None or minimum == ""): 
+        if (minimum == None or minimum == ""):
             raise(Exception("Required parameter 'min' was not specified"))
 
         return_status = utils_obj.fetch_tweets_by_min_followers(minimum)
@@ -180,7 +222,7 @@ def fetch_tweets_with_mentions():
         # variable name "minimum" to avoid conflict with min() function
         username = request.args.get('username')
 
-        if (username == None or username == ""): 
+        if (username == None or username == ""):
             raise(Exception("Required parameter 'username' was not specified"))
 
         return_status = utils_obj.fetch_tweets_with_mentions(username)
@@ -212,7 +254,7 @@ def fetch_tweets_by_language():
     try:
         lang = request.args.get('lang')
 
-        if (lang == None or lang == ""): 
+        if (lang == None or lang == ""):
             raise(Exception("Required parameter 'lang' was not specified"))
 
         return_status = utils_obj.fetch_tweets_by_language(lang)

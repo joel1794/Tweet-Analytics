@@ -1,5 +1,8 @@
 from MongoDBUtility import MongoDBUtility
+from datetime import datetime, timedelta
 import re
+from datetime import datetime
+import json
 
 STATUS_SUCCESS = "SUCCESS"
 STATUS_FAILED = "FAILED"
@@ -9,14 +12,14 @@ RESULT_KEY = "result"
 COLLECTION_NAME = "tweets"
 DATABASE_NAME = "tweet_analytics"
 
-LANGUAGE_LIST = ['ar', 'bg', 'bn', 'ca', 'cs', 'cy', 'da', 
-                'de', 'el', 'en', 'en-au', 'en-gb', 'es', 
-                'es-mx', 'eu', 'fa', 'fi', 'fil', 'fr', 
-                'ga', 'gl', 'gu', 'he', 'hi', 'hr', 'hu', 
-                'id', 'it', 'ja', 'kn', 'ko', 'lv', 'mr', 
-                'ms', 'msa', 'nb', 'nl', 'no', 'pl', 'pt', 
-                'pt-pt', 'ro', 'ru', 'sk', 'sr', 'sv', 'ta', 
-                'th', 'tr', 'uk', 'ur', 'vi', 'xx-lc', 
+LANGUAGE_LIST = ['ar', 'bg', 'bn', 'ca', 'cs', 'cy', 'da',
+                'de', 'el', 'en', 'en-au', 'en-gb', 'es',
+                'es-mx', 'eu', 'fa', 'fi', 'fil', 'fr',
+                'ga', 'gl', 'gu', 'he', 'hi', 'hr', 'hu',
+                'id', 'it', 'ja', 'kn', 'ko', 'lv', 'mr',
+                'ms', 'msa', 'nb', 'nl', 'no', 'pl', 'pt',
+                'pt-pt', 'ro', 'ru', 'sk', 'sr', 'sv', 'ta',
+                'th', 'tr', 'uk', 'ur', 'vi', 'xx-lc',
                 'zh-cn',  'zh-hans', 'zh-hant', 'zh-hk']
 
 
@@ -126,13 +129,57 @@ class ViewsUtils:
             return utility_status
 
 
-    def fetch_verified_tweets(self):
+    def fetch_verified_tweets(self, date="2000-01-01T01:00:00"):
         utility_status = {}
         try:
+            
+            print(date)
+
             mongo_url = "mongodb://localhost:27023/"
             mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
-            query = [{"user.verified": True}, {"text":1, "user.name":1, "user.followers_count":1}]
+            query = [{"user.verified": True, "created_at_time":{"$gt" : datetime.strptime(date, "%Y-%m-%dT%H:%M:%S") }}, 
+                    {"text":1, "user.name":1, "user.followers_count":1, "created_at_time":1}]
             query_type = "select"
+            result = mongo_con.execute_query(query, query_type)
+
+            if result[STATUS_KEY] == STATUS_FAILED:
+                raise Exception(result[ERROR_KEY])
+
+            utility_status[RESULT_KEY] = []
+
+            for record in result[RESULT_KEY]:
+                if "_id" in record:
+                    del record["_id"]
+                utility_status[RESULT_KEY].append(record)
+
+            utility_status[STATUS_KEY] = STATUS_SUCCESS
+            return utility_status
+
+        except Exception as exp:
+            if ERROR_KEY in utility_status:
+                error_msg = "Error while fetching verified tweets in viewsutils " + str(utility_status[ERROR_KEY])
+                print(error_msg)
+            else:
+                error_msg = "Error while fetching verified tweets in viewsutils" + str(exp)
+                print(error_msg)
+            utility_status[STATUS_KEY] = STATUS_FAILED
+            utility_status[ERROR_KEY] = error_msg
+            return utility_status
+
+
+    def fetch_top_favorited_tweets(self, date='2019-04-01'): 
+        utility_status = {}
+        try:
+            
+            mongo_url = "mongodb://localhost:27023/"
+            mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
+            query = [{"$match": {"created_at_time": {"$gte": datetime.strptime(date, "%Y-%m-%d"), 
+                                                     "$lt": datetime.strptime(date, "%Y-%m-%d") + timedelta(days=1)}}},
+                    {"$sort": { "favorites": -1}},
+                    {"$limit": 10},
+                    {"$project": {"text":1, "created_at_time":1, "favorites":1, "user.name":1}}]
+            
+            query_type = "aggregate"
             result = mongo_con.execute_query(query, query_type)
 
             if result[STATUS_KEY] == STATUS_FAILED:
@@ -185,7 +232,7 @@ class ViewsUtils:
 
             utility_status[STATUS_KEY] = STATUS_SUCCESS
             return utility_status
-        
+
         except ValueError as exp:
             error_msg = "Error while fetching tweets by minimum followers: Invalid integer supplied: " + minimum
             print(error_msg)
@@ -211,7 +258,7 @@ class ViewsUtils:
             # source: https://help.twitter.com/en/managing-your-account/twitter-username-rules
             if not re.match(r'^[a-zA-Z0-9_]{1,15}$', username):
                 raise Exception("Invalid username:" + username)
-            
+
             mongo_url = "mongodb://localhost:27023/"
             mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
             query = [{"entities.user_mentions.screen_name":username},
@@ -250,7 +297,7 @@ class ViewsUtils:
             formatted_lang = lang.strip().lower()
             if (formatted_lang not in LANGUAGE_LIST):
                 raise Exception("Invalid language code passed: " + lang)
-            
+
             mongo_url = "mongodb://localhost:27023/"
             mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
             query = [{"lang": formatted_lang}, {"text":1, "user.name":1, "lang":1}]
@@ -432,7 +479,7 @@ class ViewsUtils:
             utility_status[ERROR_KEY] = error_msg
             return utility_status
 
-
+          
     def fetch_tweets_by_min_favorites(self, minimum):
         utility_status = {}
 
