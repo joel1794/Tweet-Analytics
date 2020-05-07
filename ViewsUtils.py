@@ -329,13 +329,12 @@ class ViewsUtils:
     def fetch_tweets_with_location(self, location):
         utility_status = {}
         try:
-            if not re.match(r'^[a-zA-Z], [a-zA-Z]$', location):
+            if not re.match(r'^[a-zA-Z]*$', location):
                 raise Exception("Invalid location:" + location)
 
             mongo_url = "mongodb://localhost:27023/"
             mongo_con = MongoDBUtility(mongo_url, DATABASE_NAME, COLLECTION_NAME)
-            query = [{"place": location},
-                     {"text": 1, "user.name": 1, "place": 1}]
+            query = [{"place": {"$exists": True, "$ne": None}, "place.name": location}, {"text": 1, "place": 1}]
             query_type = "select"
             result = mongo_con.execute_query(query, query_type)
 
@@ -364,12 +363,12 @@ class ViewsUtils:
             return utility_status
 
 
-    def fetch_tweets_with_hashtag(self, hashtag):
+    def fetch_tweets_with_given_hashtag(self, hashtag):
         utility_status = {}
         try:
             # Usernames are max 15 characters, alphanumeric w/ underscores.
             # source: https://help.twitter.com/en/managing-your-account/twitter-username-rules
-            if not re.match(r'^[a-zA-Z0-9_]$', hashtag):
+            if not re.match(r'^[a-zA-Z0-9_]*$', hashtag):
                 raise Exception("Invalid hashtag:" + hashtag)
 
             hashtag_unicode = hashtag.encode("utf-8")

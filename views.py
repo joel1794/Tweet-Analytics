@@ -304,8 +304,8 @@ def fetch_tweets_with_locations():
 
 
 
-@application.route('/tweets_with_hashtag', methods=['GET', 'POST'])
-def fetch_tweets_with_hashtag():
+@application.route('/tweets_with_given_hashtag', methods=['GET', 'POST'])
+def fetch_tweets_with_given_hashtag():
     return_status = {}
     result = []
     try:
@@ -315,7 +315,7 @@ def fetch_tweets_with_hashtag():
         if (hashtag == None or hashtag == ""):
             raise(Exception("Required parameter 'hashtag' was not specified"))
 
-        return_status = utils_obj.fetch_tweets_with_hashtag(hashtag)
+        return_status = utils_obj.fetch_tweets_with_given_hashtag(hashtag)
 
         if return_status[STATUS_KEY] == STATUS_FAILED:
             raise Exception(return_status[ERROR_KEY])
