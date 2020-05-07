@@ -24,6 +24,10 @@
         <li><a href="{{ url_for('fetch_tweets_with_mentions', username='katyperry')}}">Tweets that mention @katyperry</a></li>
         <li><a href="{{ url_for('fetch_tweets_by_language', lang='en')}}">Tweets in specific language (English)</a></li>
         <li><a href="{{ url_for('fetch_top_favorited_tweets', date='2019-05-01', lang='en')}}">Top Favorited Tweets for May 1, 2019</a></li>
+        <li><a href="{{ url_for('fetch_tweets_with_certain_text', text='dog', lang='en')}}">Tweets which mention dogs</a></li>
+        <li><a href="{{ url_for('insert_tweet', text='dog', lang='en')}}">Add a tweet</a></li>
+        <li><a href="{{ url_for('remove_tweet', text='dog', lang='en')}}">Delete a tweet</a></li>
+        <li><a href="{{ url_for('find_tweets_for_user_ordered', user_id='' )}}">Specific user's tweets, ordered by most recent </a></li>
     </ul>
     
     {{ a_variable }}
