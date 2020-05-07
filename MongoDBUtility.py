@@ -37,8 +37,8 @@ class MongoDBUtility:
                 return {"status": "SUCCESS", "result": record_count}
 
             elif query_type.lower() == "aggregate":
-                record_count = self.collection.aggregate(query)
-                return {"status": "SUCCESS", "result": record_count}
+                result = self.collection.aggregate(query)
+                return {"status": "SUCCESS", "result": result}
 
         except Exception as exp:
             error_msg = "Error occurred while executing query on mongodb " + str(exp)
